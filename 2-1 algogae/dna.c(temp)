@@ -155,7 +155,7 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
     for (int i = 0; i < seq_num; i++) {
         strcpy(aligned[i], sequences[i]);
     }
-
+    
     // 각 LCS 문자 처리
     for (int k = 0; k < lcs_len; k++) {
         int max_idx = -1;
@@ -165,7 +165,7 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
             if (idx == -1) return; // LCS 문자가 시퀀스에 없으면 종료
             if (idx > max_idx) max_idx = idx;
         }
-
+        
         // 각 시퀀스에 갭 삽입
         for (int i = 0; i < seq_num; i++) {
             int curr_idx = find_next_match_index(aligned[i], curr_pos[i], lcs[k]);
@@ -175,8 +175,9 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
             }
             curr_pos[i] = max_idx + 1; // 다음 위치로 이동
         }
+       
     }
-
+    
     // 최대 길이 계산 및 길이 맞춤
     for (int i = 0; i < seq_num; i++) {
         int len = strlen(aligned[i]);
@@ -190,6 +191,12 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
         }
         aligned[i][max_len] = '\0';
     }
+
+    printf("%s, %d\n==============================\n",aligned[0],0);
+    printf("%s, %d\n",aligned[1],1);
+    printf("%s, %d\n",aligned[2],2);
+    printf("%s, %d\n",aligned[3],3);
+    printf("%s, %d\n==============================\n",aligned[4],4);
 
     // 별표 라인 생성
     aligned[seq_num][0] = '\0'; // 별표 라인 초기화
@@ -225,14 +232,18 @@ int main() {
 
     fclose(in);
     fclose(out);*/
-    int num_of_seq = 3;
+    
+    int num_of_seq = 5;
     char sequences[MAX_SEQ][MAX_LEN] = {
         "ATCCGATG",
-        "TTGACAG",
-        "GGTTGGCATG"
+        "TTGACAGGGTA",
+        "GGTTGGCATG",
+        "ATGACGATG",
+        "TGGCGCCTA"
     };
 
     char lcs[MAX_LEN];
+    
     find_common_subsequence(num_of_seq, sequences, lcs);
 
     char result_sequences[MAX_SEQ+1][MAX_LEN * 2];
