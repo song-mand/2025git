@@ -1,31 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
-#define MAX_LEN 120
+#define MAX_LEN 121 //input max length 120 +1(\n)
 #define MAX_SEQ 5
 
-void lcs(char *s1, char *s2, char *result) {
+int strlen(const char *str) {
+    int length = 0;
+    while (str[length] != '\0') {
+        length++;
+    }
+    return length;
+}
+
+void lcs(char *s1, char *s2, char *result) { //find lcs with dp
     int len1 = strlen(s1);
     int len2 = strlen(s2);
     int dp[MAX_LEN + 1][MAX_LEN + 1];
-
      for (int i = 0; i <= len1; i++){
         for (int j = 0; j <= len2; j++){
             dp[i][j] = 0;
         }
      }
-
       for (int i = 1; i <= len1; i++) {
         for (int j = 1; j <= len2; j++) {
             if (s1[i - 1] == s2[j - 1])
                 dp[i][j] = dp[i - 1][j - 1] + 1;
             else
-                dp[i][j] = (dp[i - 1][j] > dp[i][j - 1]) ? dp[i - 1][j] : dp[i][j - 1];
+                if(dp[i - 1][j] > dp[i][j - 1])
+                    dp[i][j] = dp[i - 1][j];
+                else
+                    dp[i][j]=dp[i][j - 1];
         }
     }
-
     int tmplen1 = len1;
     int tmplen2 = len2;
     int idx = dp[len1][len2];
@@ -33,7 +38,6 @@ void lcs(char *s1, char *s2, char *result) {
         idx = MAX_LEN - 1;
     }
     result[idx] = '\0'; 
-
     while (tmplen1 > 0 && tmplen2 > 0 &&idx>0) {
         if (s1[tmplen1 - 1] == s2[tmplen2 - 1]) {
             result[--idx] = s1[tmplen1 - 1];
@@ -45,99 +49,48 @@ void lcs(char *s1, char *s2, char *result) {
             tmplen2--;
     }
 }
-
-void find_common_subsequence(int k, char sequences[MAX_SEQ][MAX_LEN], char *real_lcs) {
+void find_lcs(int k, char sequences[MAX_SEQ][MAX_LEN], char *real_lcs) {//find lcs of k sequences
     char temp[MAX_LEN];
     lcs(sequences[0], sequences[1], temp);
-
     for (int i = 2; i < k; i++) {
         char next[MAX_LEN];
         lcs(temp, sequences[i], next);
-        strcpy(temp, next);
+        int idx = 0;
+        while (next[idx] != '\0') {
+            temp[idx] = next[idx];
+            idx++;
+        }
+        temp[idx] = '\0'; 
     }
-
-    strcpy(real_lcs, temp);
+    int idx = 0;
+    while (temp[idx] != '\0') {
+        real_lcs[idx] = temp[idx];
+        idx++;
+    }
+    real_lcs[idx] = '\0';
 }
 
-/*void rightshift(char *str, int start, int shiftlevel) {
+void rightshift(char *str, int start, int shiftlevel) {//right shift the string (using when inserting gap)
     int len = strlen(str);
-
+    if (len + shiftlevel >= MAX_LEN * MAX_LEN) return; 
     for (int k = len; k >= start; k--) {
         str[k + shiftlevel] = str[k];
     }
-
     for (int k = 0; k < shiftlevel; k++) {
         str[start + k] = '-';
     }
 }
-
-int find_next_match_index(const char *str, int startpoint, char target) {
+int find_late_match_index(const char *str, int startpoint, char target) {//find the next match index of target in str
+    int last=0;
     for (int i = startpoint; str[i] != '\0'; i++) {
         if (str[i] == target) {
-            
-            return i;  // 조건을 만족하는 첫 번째 인덱스
+            last=i;
         }
     }
-    return -1;  // 못 찾았을 경우
+    return last;
 }
 
-// DNA Alignment Program
-void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN*2]) {
-    int lcs_len = strlen(lcs);
-    int lcs_pos[MAX_LEN] = {'\0'};//aligned에서 몇 번째에 *이 들어가야하는지 알려줌
-    int curr_lcs_pos=0;//현재 맞추려고 하는 lcs character의 index
-    int aligned_len=0;//몇 번째 index까지 맞춰졌는지 
-    for (int i = 0; i < seq_num; i++) {
-        strcpy(aligned[i], sequences[i]);
-    }
-    for(int k=0;k<lcs_len;k++){
-        for(int i=0;i<seq_num;i++){
-            for(int j=0;j<strlen(sequences[i]);j++){
-                if(sequences[i][j]==lcs[curr_lcs_pos]&&j>aligned_len){
-                    lcs_pos[curr_lcs_pos]=j;
-                    aligned_len=j;
-                    break;
-                
-                    if(curr_lcs_pos==lcs_len){
-                        break;
-                    }
-                }
-            }
-        
-        }
-
-        //여기에 gap 넣는 코드 작성
-        for(int i=0;i<seq_num;i++){
-            int shiftlevel=find_next_match_index(aligned[i], aligned_len-1, lcs[curr_lcs_pos])-(aligned_len-1);
-            if(shiftlevel>0){
-                rightshift(aligned[i], aligned_len, shiftlevel);
-            }
-        }
-
-        curr_lcs_pos++;
-        int lcs_pos_len=0;
-        for (int i = 0; i < MAX_LEN; i++) {
-            if (lcs_pos[i] == '\0') break;  // 0이 처음 나오는 지점까지 세기
-            lcs_pos_len++;
-            printf("%d ", lcs_pos_len);
-        }
-        lcs_pos[lcs_pos_len] = aligned_len;
-    }
-    
-}*/
-
-void rightshift(char *str, int start, int shiftlevel) {
-    int len = strlen(str);
-    if (len + shiftlevel >= MAX_LEN * 2) return; // 버퍼 오버플로우 방지
-    for (int k = len; k >= start; k--) {
-        str[k + shiftlevel] = str[k];
-    }
-    for (int k = 0; k < shiftlevel; k++) {
-        str[start + k] = '-';
-    }
-}
-
-int find_next_match_index(const char *str, int startpoint, char target) {
+int find_early_match_index(const char *str, int startpoint, char target) {//find the next match index of target in str
     for (int i = startpoint; str[i] != '\0'; i++) {
         if (str[i] == target) {
             return i;
@@ -145,40 +98,44 @@ int find_next_match_index(const char *str, int startpoint, char target) {
     }
     return -1;
 }
-
-void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN * 2]) {
+void align_to_lcs_late(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN * MAX_LEN]) {//use find_late_match_index
     int lcs_len = strlen(lcs);
-    int curr_pos[MAX_LEN] = {0}; // 각 시퀀스의 현재 위치
-    int max_len = 0; // 최종 길이
+    int curr_pos[lcs_len] = {}; //ith index element is the index+1 of (i+1)th lcs character aligned sequences, 
+                                //this will be used as a start point for the shift
+    int max_len = 0; //variable for max length of aligned sequences
 
-    // aligned 초기화
+    //initialize aligned
     for (int i = 0; i < seq_num; i++) {
-        strcpy(aligned[i], sequences[i]);
+        int idx = 0;
+        while (sequences[i][idx] != '\0') {
+            aligned[i][idx] = sequences[i][idx];
+            idx++;
+        }
+        aligned[i][idx] = '\0';
     }
     
-    // 각 LCS 문자 처리
+    //deal with each LCS character
     for (int k = 0; k < lcs_len; k++) {
-        int max_idx = -1;
-        // 모든 시퀀스에서 현재 LCS 문자의 최대 인덱스 찾기
+        int max_idx = 0;
+        //find max index of current lcs character for all sequences
         for (int i = 0; i < seq_num; i++) {
-            int idx = find_next_match_index(aligned[i], curr_pos[i], lcs[k]);
-            if (idx == -1) return; // LCS 문자가 시퀀스에 없으면 종료
+            int idx = find_late_match_index(aligned[i], curr_pos[i], lcs[k]);
+            if (idx == -1) return; //if lcs character is not in the sequence, stop running
             if (idx > max_idx) max_idx = idx;
         }
-        
-        // 각 시퀀스에 갭 삽입
+
+        //insert gap for all sequences
         for (int i = 0; i < seq_num; i++) {
-            int curr_idx = find_next_match_index(aligned[i], curr_pos[i], lcs[k]);
+            int curr_idx = find_late_match_index(aligned[i], curr_pos[i], lcs[k]);
             int shiftlevel = max_idx - curr_idx;
             if (shiftlevel > 0) {
                 rightshift(aligned[i], curr_idx, shiftlevel);
             }
-            curr_pos[i] = max_idx + 1; // 다음 위치로 이동
+            curr_pos[i] = max_idx + 1; //move to next position
         }
-       
     }
-    
-    // 최대 길이 계산 및 길이 맞춤
+
+    //calculate max length and align all sequences's length by using gap
     for (int i = 0; i < seq_num; i++) {
         int len = strlen(aligned[i]);
         if (len > max_len) max_len = len;
@@ -186,20 +143,14 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
     for (int i = 0; i < seq_num; i++) {
         int len = strlen(aligned[i]);
         for (int j = len; j < max_len; j++) {
-            if (j >= MAX_LEN * 2) break;
+            if (j >= MAX_LEN*MAX_LEN) break;
             aligned[i][j] = '-';
         }
         aligned[i][max_len] = '\0';
     }
 
-    printf("%s, %d\n==============================\n",aligned[0],0);
-    printf("%s, %d\n",aligned[1],1);
-    printf("%s, %d\n",aligned[2],2);
-    printf("%s, %d\n",aligned[3],3);
-    printf("%s, %d\n==============================\n",aligned[4],4);
-
-    // 별표 라인 생성
-    aligned[seq_num][0] = '\0'; // 별표 라인 초기화
+    //generate '*' line
+    aligned[seq_num][0] = '\0'; 
     for (int j = 0; j < max_len; j++) {
         char c = aligned[0][j];
         int same = 1;
@@ -209,48 +160,137 @@ void align_to_lcs(char sequences[][MAX_LEN], int seq_num, const char *lcs, char 
                 break;
             }
         }
-        aligned[seq_num][j] = same ? '*' : ' ';
+        if(same) 
+            aligned[seq_num][j] = '*';
+        else
+            aligned[seq_num][j]=' ';
     }
     aligned[seq_num][max_len] = '\0';
 }
+void align_to_lcs_early(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN * MAX_LEN]) {//use find_early_match_index
+    int lcs_len = strlen(lcs);
+    int curr_pos[lcs_len] = {}; //ith index element is the index+1 of (i+1)th lcs character aligned sequences, 
+                                //this will be used as a start point for the shift
+    int max_len = 0; //variable for max length of aligned sequences
+
+    //initialize aligned
+    for (int i = 0; i < seq_num; i++) {
+        int idx = 0;
+        while (sequences[i][idx] != '\0') {
+            aligned[i][idx] = sequences[i][idx];
+            idx++;
+        }
+        aligned[i][idx] = '\0';
+    }
     
-void print_final_result(char aligned[][MAX_LEN*2], int k) {
+    //deal with each LCS character
+    for (int k = 0; k < lcs_len; k++) {
+        int max_idx = 0;
+        //find max index of current lcs character for all sequences
+        for (int i = 0; i < seq_num; i++) {
+            int idx = find_early_match_index(aligned[i], curr_pos[i], lcs[k]);
+            if (idx == -1) return; //if lcs character is not in the sequence, stop running
+            if (idx > max_idx) max_idx = idx;
+        }
+
+        //insert gap for all sequences
+        for (int i = 0; i < seq_num; i++) {
+            int curr_idx = find_early_match_index(aligned[i], curr_pos[i], lcs[k]);
+            int shiftlevel = max_idx - curr_idx;
+            if (shiftlevel > 0) {
+                rightshift(aligned[i], curr_idx, shiftlevel);
+            }
+            curr_pos[i] = max_idx + 1; //move to next position
+        }
+    }
+
+    //calculate max length and align all sequences's length by using gap
+    for (int i = 0; i < seq_num; i++) {
+        int len = strlen(aligned[i]);
+        if (len > max_len) max_len = len;
+    }
+    for (int i = 0; i < seq_num; i++) {
+        int len = strlen(aligned[i]);
+        for (int j = len; j < max_len; j++) {
+            if (j >= MAX_LEN*MAX_LEN) break;
+            aligned[i][j] = '-';
+        }
+        aligned[i][max_len] = '\0';
+    }
+
+    //generate '*' line
+    aligned[seq_num][0] = '\0'; 
+    for (int j = 0; j < max_len; j++) {
+        char c = aligned[0][j];
+        int same = 1;
+        for (int i = 1; i < seq_num; i++) {
+            if (aligned[i][j] != c || c == '-') {
+                same = 0;
+                break;
+            }
+        }
+        if(same) 
+            aligned[seq_num][j] = '*';
+        else
+            aligned[seq_num][j]=' ';
+    }
+    aligned[seq_num][max_len] = '\0';
+}
+void print_final_result(char aligned[][MAX_LEN*MAX_LEN], int k, FILE *out) {
     for (int i = 0; i < k+1; i++) {
-        printf("%s\n", aligned[i]);
+        fputs(aligned[i], out);
+        fputc('\n', out);
     }
 }
-
 int main() {
-    /*FILE *in = fopen("dna_input.txt", "r");
+    FILE *in = fopen("dna_input.txt", "r");
     FILE *out = fopen("dna_output.txt", "w");
     if (!in || !out) {
         fprintf(stderr, "File error\n");
         return 1;
     }
 
-    // TODO: Implement alignment algorithm
-
-    fclose(in);
-    fclose(out);*/
-    
-    int num_of_seq = 5;
-    char sequences[MAX_SEQ][MAX_LEN] = {
-        "ATCCGATG",
-        "TTGACAGGGTA",
-        "GGTTGGCATG",
-        "ATGACGATG",
-        "TGGCGCCTA"
-    };
+    char seqnum=fgetc(in);
+    char enter=fgetc(in);//character for enter
+    int num_of_seq = seqnum - '0';//transform char to int
+    if(num_of_seq<2||num_of_seq>5){
+        return -1;
+    }//if number of sequences is not in the range, return -1
+    char buck=fgetc(in);
+    if(buck!='$'){// if second line character is not '$', return -1
+        return -1;
+    }
+    enter=fgetc(in);
+    char sequences[MAX_SEQ][MAX_LEN];
+    for(int i=0;i<num_of_seq;i++){//read sequences
+        fgets(sequences[i], MAX_LEN, in);
+        for (int j = 0; sequences[i][j] != '\0'; j++) {
+        if (sequences[i][j] == '\n') {
+            sequences[i][j] = '\0';
+            break;
+        }
+        } 
+    }
 
     char lcs[MAX_LEN];
-    
-    find_common_subsequence(num_of_seq, sequences, lcs);
+    find_lcs(num_of_seq, sequences, lcs);
 
-    char result_sequences[MAX_SEQ+1][MAX_LEN * 2];
-    align_to_lcs(sequences, num_of_seq, lcs, result_sequences);
-    print_final_result(result_sequences, num_of_seq);
+    char result_sequences_late[MAX_SEQ+1][MAX_LEN * MAX_LEN];//array for aligned sequences
+    char result_sequences_early[MAX_SEQ+1][MAX_LEN * MAX_LEN];
 
-    printf("Common subsequence of all sequences: %s\n", lcs);
+    align_to_lcs_late(sequences, num_of_seq, lcs, result_sequences_late);
+    align_to_lcs_early(sequences, num_of_seq, lcs, result_sequences_early);
+
+    int latelen=strlen(result_sequences_late[0]);
+    int earlylen=strlen(result_sequences_early[0]);
+    if(latelen>earlylen){
+        print_final_result(result_sequences_early, num_of_seq,out);
+    }
+    else{
+        print_final_result(result_sequences_late, num_of_seq,out);
+    }
     
+    fclose(in);
+    fclose(out);
     return 0;
 }
