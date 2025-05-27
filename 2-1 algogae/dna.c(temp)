@@ -90,14 +90,6 @@ int find_late_match_index(const char *str, int startpoint, char target) {//find 
     return last;
 }
 
-int find_early_match_index(const char *str, int startpoint, char target) {//find the next match index of target in str
-    for (int i = startpoint; str[i] != '\0'; i++) {
-        if (str[i] == target) {
-            return i;
-        }
-    }
-    return -1;
-}
 void align_to_lcs_late(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN * MAX_LEN]) {//use find_late_match_index
     int lcs_len = strlen(lcs);
     int curr_pos[lcs_len] = {}; //ith index element is the index+1 of (i+1)th lcs character aligned sequences, 
@@ -167,75 +159,7 @@ void align_to_lcs_late(char sequences[][MAX_LEN], int seq_num, const char *lcs, 
     }
     aligned[seq_num][max_len] = '\0';
 }
-void align_to_lcs_early(char sequences[][MAX_LEN], int seq_num, const char *lcs, char aligned[][MAX_LEN * MAX_LEN]) {//use find_early_match_index
-    int lcs_len = strlen(lcs);
-    int curr_pos[lcs_len] = {}; //ith index element is the index+1 of (i+1)th lcs character aligned sequences, 
-                                //this will be used as a start point for the shift
-    int max_len = 0; //variable for max length of aligned sequences
 
-    //initialize aligned
-    for (int i = 0; i < seq_num; i++) {
-        int idx = 0;
-        while (sequences[i][idx] != '\0') {
-            aligned[i][idx] = sequences[i][idx];
-            idx++;
-        }
-        aligned[i][idx] = '\0';
-    }
-    
-    //deal with each LCS character
-    for (int k = 0; k < lcs_len; k++) {
-        int max_idx = 0;
-        //find max index of current lcs character for all sequences
-        for (int i = 0; i < seq_num; i++) {
-            int idx = find_early_match_index(aligned[i], curr_pos[i], lcs[k]);
-            if (idx == -1) return; //if lcs character is not in the sequence, stop running
-            if (idx > max_idx) max_idx = idx;
-        }
-
-        //insert gap for all sequences
-        for (int i = 0; i < seq_num; i++) {
-            int curr_idx = find_early_match_index(aligned[i], curr_pos[i], lcs[k]);
-            int shiftlevel = max_idx - curr_idx;
-            if (shiftlevel > 0) {
-                rightshift(aligned[i], curr_idx, shiftlevel);
-            }
-            curr_pos[i] = max_idx + 1; //move to next position
-        }
-    }
-
-    //calculate max length and align all sequences's length by using gap
-    for (int i = 0; i < seq_num; i++) {
-        int len = strlen(aligned[i]);
-        if (len > max_len) max_len = len;
-    }
-    for (int i = 0; i < seq_num; i++) {
-        int len = strlen(aligned[i]);
-        for (int j = len; j < max_len; j++) {
-            if (j >= MAX_LEN*MAX_LEN) break;
-            aligned[i][j] = '-';
-        }
-        aligned[i][max_len] = '\0';
-    }
-
-    //generate '*' line
-    aligned[seq_num][0] = '\0'; 
-    for (int j = 0; j < max_len; j++) {
-        char c = aligned[0][j];
-        int same = 1;
-        for (int i = 1; i < seq_num; i++) {
-            if (aligned[i][j] != c || c == '-') {
-                same = 0;
-                break;
-            }
-        }
-        if(same) 
-            aligned[seq_num][j] = '*';
-        else
-            aligned[seq_num][j]=' ';
-    }
-    aligned[seq_num][max_len] = '\0';
-}
 void print_final_result(char aligned[][MAX_LEN*MAX_LEN], int k, FILE *out) {
     for (int i = 0; i < k+1; i++) {
         fputs(aligned[i], out);
