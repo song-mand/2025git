@@ -43,10 +43,10 @@ int strcmp(const char *a, const char *b) {
 unsigned long hash_bigram(const char *first, const char *second) {
     unsigned long hash = 1000;
     while(*first){
-        hash = (hash<<2)+*first++;
+        hash = hash+*first++;
     }
     while(*second){
-        hash = (hash<<2)-*second++;
+        hash = hash-*second++;
     }
     
     return hash % TABLE_SIZE;
@@ -81,7 +81,9 @@ void insert_bigram(const char *first, const char *second) {
 
 void lower(char *word) {
     for (int i = 0; word[i]; i++) {
-        word[i] = tolower((unsigned char)word[i]);
+        if(word[i] >= 'A' && word[i] <= 'Z'){
+            word[i] = word[i]+('a' - 'A');
+        }
     }
 }
 
@@ -108,15 +110,78 @@ void read_words(FILE *fp, WordList *list) {
 }
 
 void make_bigrams(const WordList *words) {
-    for (int i = 0; i < words->size - 1; i++) {
+     for (int i = 0; i < words->size - 1; i++) {
         insert_bigram(words->items[i], words->items[i + 1]);
     }
 }
 
-int compare_bigrams(const void *a, const void *b) {
+/*int compare_bigrams(const void *a, const void *b) {
     const Bigram *ba = *(const Bigram **)a;
     const Bigram *bb = *(const Bigram **)b;
     return bb->count - ba->count;
+}*/
+
+void merge(Bigram **arr, int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Bigram **Left = malloc(sizeof(Bigram *) * n1);
+    Bigram **Right = malloc(sizeof(Bigram *) * n2);
+
+    for (int i = 0; i < n1; i++){
+        Left[i] = arr[left + i];
+    }
+    for (int j = 0; j < n2; j++){
+        Right[j] = arr[mid + 1 + j];
+    }
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (Left[i]->count >= Right[j]->count) {
+            arr[k++] = Left[i++];
+        }
+        else{
+            arr[k++] = Right[j++];
+        }
+    }
+
+    while (i < n1){
+        arr[k++] = Left[i++];
+    }
+    while (j < n2){
+        arr[k++] = Right[j++];
+    }
+
+    free(Left);
+    free(Right);
+}
+
+void mergesort(Bigram **arr, int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        mergesort(arr, left, mid);
+        mergesort(arr, mid + 1, right);
+
+        merge(arr, left, mid, right);
+    }
+}
+
+void sort(Bigram **arr, int n) {
+    /*for (int i = 0; i < n - 1; i++) {
+        int max_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j]->count > arr[max_idx]->count) {
+                max_idx = j;
+            }
+        }
+        if (max_idx != i) {
+            Bigram *temp = arr[i];
+            arr[i] = arr[max_idx];
+            arr[max_idx] = temp;
+        }
+    }*/
+    mergesort(arr, 0, n - 1);
 }
 
 void get_top_bigrams(TopBigramList *top, int *total_bigrams) {
@@ -124,12 +189,14 @@ void get_top_bigrams(TopBigramList *top, int *total_bigrams) {
     int count = 0;
     for (int i = 0; i < TABLE_SIZE; i++) {
         for (Bigram *curr = table[i]; curr; curr = curr->next) {
-            all[count++] = curr;
+            all[count] = curr;
+            count++;
         }
     }
 
     *total_bigrams = count;
-    qsort(all, count, sizeof(Bigram *), compare_bigrams);
+    //qsort(all, count, sizeof(Bigram *), compare_bigrams);
+    sort(all, count);
 
     top->size = 0;
     for (int i = 0; i < TOP_N && i < count; i++) {
@@ -194,3 +261,4 @@ int main() {
     free_table();
     return 0;
 }
+
