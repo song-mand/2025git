@@ -1,2 +1,3 @@
 First: 
 Second: Hash function changed from the first code
+Third: Loop unrolling on insert_bigrams(But no improvement)
