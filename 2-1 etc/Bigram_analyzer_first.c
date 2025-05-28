@@ -41,11 +41,20 @@ int strcmp(const char *a, const char *b) {
 }
 
 unsigned long hash_bigram(const char *first, const char *second) {
-    unsigned long hash = 5381;
-    //while (*first) hash = ((hash << 5) + hash) + *first++;
-    //while (*second) hash = ((hash << 5) + hash) + *second++;
-    hash=hash+ *first++;
-    hash=hash- *second++;
+    unsigned long hash = 1000;
+    /*while(*first){
+        hash = (hash<<2)+*first++;
+    }
+    while(*second){
+        hash = (hash<<2)-*second++;
+    }*/
+    while(*first){
+        hash = hash+(*first++);
+    }
+    while(*second){
+        hash = hash-(*second++);
+    }
+    
     return hash % TABLE_SIZE;
 }
 
@@ -78,7 +87,9 @@ void insert_bigram(const char *first, const char *second) {
 
 void lower(char *word) {
     for (int i = 0; word[i]; i++) {
-        word[i] = tolower((unsigned char)word[i]);
+        if(word[i] >= 'A' && word[i] <= 'Z'){
+            word[i] = word[i]+('a' - 'A');
+        }
     }
 }
 
@@ -105,15 +116,31 @@ void read_words(FILE *fp, WordList *list) {
 }
 
 void make_bigrams(const WordList *words) {
-    for (int i = 0; i < words->size - 1; i++) {
+     for (int i = 0; i < words->size - 1; i++) {
         insert_bigram(words->items[i], words->items[i + 1]);
     }
 }
 
-int compare_bigrams(const void *a, const void *b) {
+/*int compare_bigrams(const void *a, const void *b) {
     const Bigram *ba = *(const Bigram **)a;
     const Bigram *bb = *(const Bigram **)b;
     return bb->count - ba->count;
+}*/
+
+void sort(Bigram **arr, int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int max_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j]->count > arr[max_idx]->count) {
+                max_idx = j;
+            }
+        }
+        if (max_idx != i) {
+            Bigram *temp = arr[i];
+            arr[i] = arr[max_idx];
+            arr[max_idx] = temp;
+        }
+    }
 }
 
 void get_top_bigrams(TopBigramList *top, int *total_bigrams) {
@@ -121,12 +148,14 @@ void get_top_bigrams(TopBigramList *top, int *total_bigrams) {
     int count = 0;
     for (int i = 0; i < TABLE_SIZE; i++) {
         for (Bigram *curr = table[i]; curr; curr = curr->next) {
-            all[count++] = curr;
+            all[count] = curr;
+            count++;
         }
     }
 
     *total_bigrams = count;
-    qsort(all, count, sizeof(Bigram *), compare_bigrams);
+    //qsort(all, count, sizeof(Bigram *), compare_bigrams);
+    sort(all, count);
 
     top->size = 0;
     for (int i = 0; i < TOP_N && i < count; i++) {
