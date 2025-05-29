@@ -51,7 +51,7 @@ unsigned int pow(int base, int exp) {
 
 unsigned long hash_bigram(const char *first, const char *second) {
     unsigned long hash = 5000;
-    double cnt=0;
+    int cnt=0;
     while(*first){
         hash = hash+(*first++*(pow(10,cnt)*(cnt)));
         cnt++;
