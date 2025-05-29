@@ -58,9 +58,6 @@ char *str_clone(const char *s) {
     char *clone = malloc(len);
     if (clone) {
         strcpy(clone, s);
-        /*char *start = clone;
-        while ((*clone++ = *s++));
-        clone= start;*/ // Reset clone pointer to the start
     }
     return clone;
 }
@@ -80,8 +77,8 @@ void insert_bigram(const char *first, const char *second) {
     node->second = str_clone(second);
 
     node->count = 1;
-    /*node->next = table[h];
-    table[h] = node;*/
+    node->next = table[h];
+    table[h] = node;
     
 }
 
@@ -120,12 +117,6 @@ void make_bigrams(const WordList *words) {
         insert_bigram(words->items[i], words->items[i + 1]);
     }
 }
-
-/*int compare_bigrams(const void *a, const void *b) {
-    const Bigram *ba = *(const Bigram **)a;
-    const Bigram *bb = *(const Bigram **)b;
-    return bb->count - ba->count;
-}*/
 
 void merge(Bigram **arr, int left, int mid, int right) {
     int n1 = mid - left + 1;
@@ -192,19 +183,6 @@ void mergesort(Bigram **arr, int left, int right) {
 }
 
 void sort(Bigram **arr, int n) {
-    /*for (int i = 0; i < n - 1; i++) {
-        int max_idx = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j]->count > arr[max_idx]->count) {
-                max_idx = j;
-            }
-        }
-        if (max_idx != i) {
-            Bigram *temp = arr[i];
-            arr[i] = arr[max_idx];
-            arr[max_idx] = temp;
-        }
-    }*/
     mergesort(arr, 0, n - 1);
 }
 
