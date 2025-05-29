@@ -168,19 +168,6 @@ void mergesort(Bigram **arr, int left, int right) {
 }
 
 void sort(Bigram **arr, int n) {
-    /*for (int i = 0; i < n - 1; i++) {
-        int max_idx = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j]->count > arr[max_idx]->count) {
-                max_idx = j;
-            }
-        }
-        if (max_idx != i) {
-            Bigram *temp = arr[i];
-            arr[i] = arr[max_idx];
-            arr[max_idx] = temp;
-        }
-    }*/
     mergesort(arr, 0, n - 1);
 }
 
