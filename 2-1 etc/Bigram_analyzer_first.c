@@ -42,12 +42,7 @@ int strcmp(const char *a, const char *b) {
 
 unsigned long hash_bigram(const char *first, const char *second) {
     unsigned long hash = 1000;
-    /*while(*first){
-        hash = (hash<<2)+*first++;
-    }
-    while(*second){
-        hash = (hash<<2)-*second++;
-    }*/
+    
     while(*first){
         hash = hash+(*first++);
     }
@@ -120,12 +115,6 @@ void make_bigrams(const WordList *words) {
         insert_bigram(words->items[i], words->items[i + 1]);
     }
 }
-
-/*int compare_bigrams(const void *a, const void *b) {
-    const Bigram *ba = *(const Bigram **)a;
-    const Bigram *bb = *(const Bigram **)b;
-    return bb->count - ba->count;
-}*/
 
 void sort(Bigram **arr, int n) {
     for (int i = 0; i < n - 1; i++) {
