@@ -160,14 +160,9 @@ void merge(Bigram **arr, int left, int mid, int right) {
 
     i = 0, j = 0; int k = left;
     while (i < n1 && j < n2) {
-        if (Left[i]->count >= Right[j]->count) {
-            arr[k++] = Left[i++];
-        }
-        else{
-            arr[k++] = Right[j++];
-        } 
+        arr[k++]=(Left[i]->count >= Right[j]->count)? Left[i++] : Right[j++];
     }
-
+    
     while (i < n1){
         arr[k++] = Left[i++];
     }
