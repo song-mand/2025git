@@ -1,3 +1,5 @@
 First: 
 Second: sorting method changed(selection to merge)
 Third: Loop unrolling on insert_bigrams(But no improvement)
+Fourth: Hash function changed (using pow func but became worse)
+Fifth: Hash function changed again (using shift operator instead)
