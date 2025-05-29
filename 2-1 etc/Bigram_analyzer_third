@@ -43,10 +43,10 @@ int strcmp(const char *a, const char *b) {
 unsigned long hash_bigram(const char *first, const char *second) {
     unsigned long hash = 1000;
     while(*first){
-        hash = (hash<<2)+*first++;
+        hash = hash+*first++;
     }
     while(*second){
-        hash = (hash<<2)-*second++;
+        hash = hash-*second++;
     }
     
     return hash % TABLE_SIZE;
